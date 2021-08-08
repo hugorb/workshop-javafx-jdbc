@@ -10,137 +10,144 @@ import java.util.List;
 
 import db.DB;
 import db.DbException;
+import db.DbIntegrityException;
 import model.dao.DepartmentDao;
 import model.entities.Department;
 
 public class DepartmentDaoJDBC implements DepartmentDao {
 
-	Connection connection = null;
-
-	public DepartmentDaoJDBC(Connection connection) {
-		this.connection = connection;
+	private Connection conn;
+	
+	public DepartmentDaoJDBC(Connection conn) {
+		this.conn = conn;
 	}
-
-	@Override
-	public void insert(Department obj) {
-		PreparedStatement statement = null;
-		ResultSet result = null;
-		
-		try {
-
-			statement = connection.prepareStatement("INSERT INTO department (Name) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			statement.setString(1, obj.getName());
-			int rows = statement.executeUpdate();
-
-			if (rows > 0) {
-				result = statement.getGeneratedKeys();
-				if (result.next()) {
-					obj.setId(result.getInt(1));
-				}
-			}else {
-				throw new DbException("Unexpected error! No rows affected!");
-			}
-
-		} catch (SQLException e) {
-			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(statement);
-			DB.closeResultSet(result);
-		}
-
-	}
-
-	@Override
-	public void update(Department obj) {
-		PreparedStatement statement = null;
-
-		try {
-
-			statement = connection.prepareStatement("UPDATE department SET Name = ? WHERE Id = ?");
-			statement.setString(1, obj.getName());
-			statement.setInt(2, obj.getId());
-
-			statement.executeUpdate();
-
-		} catch (SQLException e) {
-			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(statement);
-		}
-
-	}
-
-	@Override
-	public void deleteById(Integer id) {
-
-		PreparedStatement statement = null;
-
-		try {
-
-			statement = connection.prepareStatement("DELETE FROM department WHERE Id = ?");
-			statement.setInt(1, id);
-
-			statement.executeUpdate();
-
-		} catch (SQLException e) {
-			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(statement);
-		}
-
-	}
-
+	
 	@Override
 	public Department findById(Integer id) {
-
-		PreparedStatement statement = null;
-		ResultSet result = null;
-
+		PreparedStatement st = null;
+		ResultSet rs = null;
 		try {
-
-			statement = connection.prepareStatement("SELECT * FROM department WHERE Id = ?");
-			statement.setInt(1, id);
-			result = statement.executeQuery();
-
-			if (result.next()) {
-				return new Department(result.getInt("Id"), result.getString("Name"));
-			} else {
-				return null;
+			st = conn.prepareStatement(
+				"SELECT * FROM department WHERE Id = ?");
+			st.setInt(1, id);
+			rs = st.executeQuery();
+			if (rs.next()) {
+				Department obj = new Department();
+				obj.setId(rs.getInt("Id"));
+				obj.setName(rs.getString("Name"));
+				return obj;
 			}
-
-		} catch (SQLException e) {
+			return null;
+		}
+		catch (SQLException e) {
 			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(statement);
-			DB.closeResultSet(result);
+		}
+		finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
 		}
 	}
 
 	@Override
 	public List<Department> findAll() {
-
-		PreparedStatement statement = null;
-		ResultSet result = null;
-
+		PreparedStatement st = null;
+		ResultSet rs = null;
 		try {
+			st = conn.prepareStatement(
+				"SELECT * FROM department ORDER BY Name");
+			rs = st.executeQuery();
 
-			statement = connection.prepareStatement("SELECT * FROM department ORDER BY Name");
+			List<Department> list = new ArrayList<>();
 
-			result = statement.executeQuery();
-
-			List<Department> departments = new ArrayList<>();
-
-			while (result.next()) {
-				departments.add(new Department(result.getInt("Id"), result.getString("Name")));
+			while (rs.next()) {
+				Department obj = new Department();
+				obj.setId(rs.getInt("Id"));
+				obj.setName(rs.getString("Name"));
+				list.add(obj);
 			}
-			return departments;
-
-		} catch (SQLException e) {
+			return list;
+		}
+		catch (SQLException e) {
 			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(statement);
-			DB.closeResultSet(result);
+		}
+		finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
 		}
 	}
 
+	@Override
+	public void insert(Department obj) {
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement(
+				"INSERT INTO department " +
+				"(Name) " +
+				"VALUES " +
+				"(?)", 
+				Statement.RETURN_GENERATED_KEYS);
+
+			st.setString(1, obj.getName());
+
+			int rowsAffected = st.executeUpdate();
+			
+			if (rowsAffected > 0) {
+				ResultSet rs = st.getGeneratedKeys();
+				if (rs.next()) {
+					int id = rs.getInt(1);
+					obj.setId(id);
+				}
+			}
+			else {
+				throw new DbException("Unexpected error! No rows affected!");
+			}
+		}
+		catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} 
+		finally {
+			DB.closeStatement(st);
+		}
+	}
+
+	@Override
+	public void update(Department obj) {
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement(
+				"UPDATE department " +
+				"SET Name = ? " +
+				"WHERE Id = ?");
+
+			st.setString(1, obj.getName());
+			st.setInt(2, obj.getId());
+
+			st.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} 
+		finally {
+			DB.closeStatement(st);
+		}
+	}
+
+	@Override
+	public void deleteById(Integer id) {
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement(
+				"DELETE FROM department WHERE Id = ?");
+
+			st.setInt(1, id);
+
+			st.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw new DbIntegrityException(e.getMessage());
+		} 
+		finally {
+			DB.closeStatement(st);
+		}
+	}
 }

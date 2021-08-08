@@ -11,38 +11,40 @@ import java.util.Properties;
 
 public class DB {
 
-	private static Connection connection = null;
-
+	private static Connection conn = null;
+	
 	public static Connection getConnection() {
-		if(connection == null) {
+		if (conn == null) {
 			try {
 				Properties props = loadProperties();
-				connection = DriverManager.getConnection(props.getProperty("dburl"), props);
+				String url = props.getProperty("dburl");
+				conn = DriverManager.getConnection(url, props);
 			}
-			catch(SQLException e) {
+			catch (SQLException e) {
 				throw new DbException(e.getMessage());
 			}
 		}
-		return connection;
+		return conn;
 	}
-
+	
+	public static void closeConnection() {
+		if (conn != null) {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				throw new DbException(e.getMessage());
+			}
+		}
+	}
+	
 	private static Properties loadProperties() {
 		try (FileInputStream fs = new FileInputStream("db.properties")) {
 			Properties props = new Properties();
 			props.load(fs);
 			return props;
-		} catch (IOException e) {
-			throw new DbException(e.getMessage());
 		}
-	}
-	
-	public static void colseConnection() {
-		if(connection != null) {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				throw new DbException(e.getMessage());
-			}
+		catch (IOException e) {
+			throw new DbException(e.getMessage());
 		}
 	}
 	
@@ -55,7 +57,7 @@ public class DB {
 			}
 		}
 	}
-	
+
 	public static void closeResultSet(ResultSet rs) {
 		if (rs != null) {
 			try {
@@ -65,5 +67,4 @@ public class DB {
 			}
 		}
 	}
-
 }
