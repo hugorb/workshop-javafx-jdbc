@@ -9,7 +9,7 @@ public class Seller implements Serializable{
 	
 	private Integer id;
 	private String name;
-	private String emeil;
+	private String email;
 	private Date birthDate;
 	private Double baseSalary;
 	private Department department;
@@ -17,10 +17,10 @@ public class Seller implements Serializable{
 	public Seller() {
 	}
 
-	public Seller(Integer id, String name, String emeil, Date birthDate, Double baseSalary, Department department) {
+	public Seller(Integer id, String name, String email, Date birthDate, Double baseSalary, Department department) {
 		this.id = id;
 		this.name = name;
-		this.emeil = emeil;
+		this.email = email;
 		this.birthDate = birthDate;
 		this.baseSalary = baseSalary;
 		this.department = department;
@@ -42,12 +42,12 @@ public class Seller implements Serializable{
 		this.name = name;
 	}
 
-	public String getEmeil() {
-		return emeil;
+	public String getEmail() {
+		return email;
 	}
 
-	public void setEmeil(String emeil) {
-		this.emeil = emeil;
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public Date getBirthDate() {
@@ -78,7 +78,7 @@ public class Seller implements Serializable{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((emeil == null) ? 0 : emeil.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
@@ -92,10 +92,10 @@ public class Seller implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		Seller other = (Seller) obj;
-		if (emeil == null) {
-			if (other.emeil != null)
+		if (email == null) {
+			if (other.email != null)
 				return false;
-		} else if (!emeil.equals(other.emeil))
+		} else if (!email.equals(other.email))
 			return false;
 		if (id == null) {
 			if (other.id != null)
@@ -107,7 +107,7 @@ public class Seller implements Serializable{
 
 	@Override
 	public String toString() {
-		return "Seller [id=" + id + ", name=" + name + ", emeil=" + emeil + ", birthDate=" + birthDate + ", baseSalary="
+		return "Seller [id=" + id + ", name=" + name + ", email=" + email + ", birthDate=" + birthDate + ", baseSalary="
 				+ baseSalary + ", department=" + department + "]";
 	}
 
